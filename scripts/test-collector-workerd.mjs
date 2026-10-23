@@ -13,7 +13,7 @@ const collector = compile(await fs.readFile(new URL('../lib/collector.ts', impor
   .replace(/import \{ TOPICS \} from ['"]\.\/topics['"];?/, 'const TOPICS = ' + JSON.stringify(TOPICS) + ';');
 const script = collector + `
 export default { async fetch(request, env) {
-  try { return Response.json(await collect(new URL(request.url).searchParams.get('url'), {readerApiKey: env.JINA_API_KEY})); }
+  try { return Response.json(await collect(new URL(request.url).searchParams.get('url'), {readerApiKey: env.JINA_API_KEY, bilibiliApiUrl: env.BILIBILI_MCP_API_URL, bilibiliApiToken: env.BILIBILI_MCP_API_TOKEN})); }
   catch (error) { return Response.json({error:error.message},{status:400}); }
 }};`;
 const config = { modules: true, script, compatibilityDate: '2026-05-15', compatibilityFlags: ['nodejs_compat'] };
@@ -60,6 +60,32 @@ try {
   }
   console.log('PASS: real workerd direct, short-link, reader fallback, and explicit redirect rejection');
 } finally { await fixtureRuntime.dispose(); }
+const serviceBase = 'https://bili-collector.valid-domain.com';
+let serviceRedirect = false;
+const serviceRuntime = new Miniflare({ ...config, bindings: { BILIBILI_MCP_API_URL: serviceBase, BILIBILI_MCP_API_TOKEN: 'fake-service-key' }, outboundService: async request => {
+  if (request.url === short) {
+    assert.equal(request.headers.get('Authorization'), null);
+    return new Response(null, { status: 302, headers: { location: canonical } });
+  }
+  assert.equal(request.headers.get('Authorization'), 'Bearer fake-service-key');
+  if (request.url === serviceBase + '/api/video/info/' + bvid) {
+    if (serviceRedirect) return new Response(null, { status: 302, headers: { location: 'https://unexpected.com/' } });
+    return Response.json(metadata.data);
+  }
+  assert.equal(request.url, serviceBase + '/api/video/subtitle/' + bvid + '?format=raw');
+  return Response.json({ bvid, subtitle: [{ from: 0, to: 2.5, content: 'Agent 字幕运行时测试' }] });
+} });
+try {
+  const response = await serviceRuntime.dispatchFetch('http://worker.test/?url=' + encodeURIComponent(short));
+  const result = await response.json();
+  assert.equal(response.status, 200, JSON.stringify(result));
+  assert.match(result.body, /Agent 字幕运行时测试/); assert.match(result.body, /bilibili-mcp/);
+  assert.ok(!JSON.stringify(result).includes('fake-service-key'));
+  serviceRedirect = true;
+  const rejected = await serviceRuntime.dispatchFetch('http://worker.test/?url=' + encodeURIComponent(short));
+  assert.equal(rejected.status, 400); assert.match((await rejected.json()).error, /HTTP 302/);
+  console.log('PASS: real workerd bilibili-mcp metadata, subtitles, secret isolation and redirect rejection');
+} finally { await serviceRuntime.dispose(); }
 if (process.argv[2] === '--live') {
   const live = new Miniflare(config);
   try {

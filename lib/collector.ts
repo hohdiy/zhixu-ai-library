@@ -4,7 +4,7 @@ const USER_AGENT = 'ZhixuLibrary/1.0 (personal research collector)';
 const REDIRECTS = [301, 302, 303, 307, 308];
 const MAX_BYTES = 2_000_000;
 
-export type CollectionOptions = { readerApiKey?: string };
+export type CollectionOptions = { readerApiKey?: string; bilibiliApiUrl?: string; bilibiliApiToken?: string };
 
 type BilibiliVideo = { canonicalUrl: string; bvid?: string; aid?: string; page: number };
 
@@ -146,9 +146,34 @@ async function readBilibiliMetadata(apiUrl: string, options: CollectionOptions) 
   }
 }
 
+async function bilibiliServiceRequest(options: CollectionOptions, path: string) {
+  const base = new URL(options.bilibiliApiUrl!.trim());
+  if (base.search || base.hash) throw new Error('B站采集服务地址不能包含查询参数或片段');
+  safeUrl(base.toString());
+  const url = base.toString().replace(/\/$/, '') + path;
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (options.bilibiliApiToken?.trim()) headers.Authorization = 'Bearer ' + options.bilibiliApiToken.trim();
+  let response: Response;
+  try {
+    response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(22000), headers });
+  } catch {
+    throw new Error('B站采集服务连接失败或超时，请稍后重试');
+  }
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`B站采集服务暂时不可用（HTTP ${response.status}），请检查服务状态与认证配置`);
+  }
+  try { return JSON.parse(await readText(response)); }
+  catch { throw new Error('B站采集服务返回格式异常，已保留链接供核对'); }
+}
+
 async function collectBilibili(video: BilibiliVideo, options: CollectionOptions) {
   const query = new URLSearchParams(video.bvid ? { bvid: video.bvid } : { aid: video.aid! });
-  const { result, viaReader } = await readBilibiliMetadata('https://api.bilibili.com/x/web-interface/view?' + query, options);
+  // The upstream REST API accepts BV identifiers. AV links retain the existing public API path.
+  const viaService = Boolean(options.bilibiliApiUrl?.trim() && video.bvid);
+  const { result, viaReader } = viaService
+    ? { result: { code: 0, data: await bilibiliServiceRequest(options, '/api/video/info/' + video.bvid) }, viaReader: false }
+    : await readBilibiliMetadata('https://api.bilibili.com/x/web-interface/view?' + query, options);
   if (result?.code !== 0) {
     const code = typeof result?.code === 'number' ? result.code : '未知';
     throw new Error(`B站视频不可公开读取（${code}），可能已删除或需要权限，已保留链接`);
@@ -169,21 +194,42 @@ async function collectBilibili(video: BilibiliVideo, options: CollectionOptions)
   const published = typeof data.pubdate === 'number' && data.pubdate > 0 ? new Date(data.pubdate * 1000) : null;
   const publishedAt = published && Number.isFinite(published.getTime()) ? published.toISOString() : null;
   const duration = typeof part?.duration === 'number' ? part.duration : data.duration;
-  const summary = description
+  let transcript = '';
+  let subtitleNote = '';
+  if (viaService && video.page === 1) {
+    try {
+      const value = await bilibiliServiceRequest(options, '/api/video/subtitle/' + video.bvid + '?format=raw');
+      const segments = value?.subtitle;
+      if (value?.bvid !== video.bvid || !Array.isArray(segments) || !segments.length || segments.length > 5000 || segments.some(s => !s || typeof s.content !== 'string' || !s.content.trim() || !Number.isFinite(s.from) || !Number.isFinite(s.to) || s.from < 0 || s.to < s.from)) {
+        throw new Error('字幕缺失或格式异常');
+      }
+      const text = segments.map(s => `[${s.from.toFixed(2)}–${s.to.toFixed(2)}秒] ${s.content.trim()}`).join('\n');
+      if (text.length > 150000) throw new Error('字幕过大');
+      transcript = text;
+    } catch {
+      subtitleNote = '字幕暂未获取成功（可能需要登录凭据、转写仍在处理或服务暂不可用）；当前仅保存元信息，可稍后重试。';
+    }
+  } else if (viaService) {
+    // Upstream always reads page_index=0. Never attach P1 subtitles to another part.
+    subtitleNote = '该采集服务的字幕接口仅支持第一分P；当前分P仅保存元信息。';
+  }
+  const summary = transcript ? 'B站视频字幕摘录（AI生成，待研读）：' + transcript.slice(0, 600) : description
     ? 'B站视频简介（未转写视频）：' + description.slice(0, 600)
     : `B站视频${author ? '，UP主：' + author : ''}。该视频未提供简介，尚未读取音视频或字幕，待进一步研读。`;
   const body = [
-    '来源类型：B站公开视频元信息',
-    '元信息读取路径：' + (viaReader ? 'B站公开接口，经 Jina Reader 读取' : 'B站公开接口直接读取'),
-    '内容边界：仅采集标题、UP主、发布日期及简介；未读取音视频或字幕，不能据此确认视频内的论据或结论。',
+    '来源类型：B站公开视频' + (transcript ? '元信息与字幕' : '元信息'),
+    '元信息读取路径：' + (viaService ? 'L-Chris/bilibili-mcp REST 接口' : viaReader ? 'B站公开接口，经 Jina Reader 读取' : 'B站公开接口直接读取'),
+    transcript ? '内容边界：已取得采集服务返回的字幕；字幕可能来自 B站 AI 字幕或必剪转写，可能有误，尚未人工核对或完成研读。' : '内容边界：仅采集标题、UP主、发布日期及简介；未读取音视频或字幕，不能据此确认视频内的论据或结论。',
     '视频页：' + video.canonicalUrl,
     '标题：' + title,
     'UP主：' + (author || '未知'),
     '发布日期：' + (publishedAt || '未知'),
     ...(typeof duration === 'number' && duration > 0 ? ['时长：' + duration + ' 秒'] : []),
     '简介：' + (description || '该视频未提供简介。'),
+    ...(subtitleNote ? ['字幕状态：' + subtitleNote] : []),
+    ...(transcript ? ['字幕（带时间范围，单位秒）：', transcript] : []),
   ].join('\n');
-  return { title, summary, body, author, company: '', publishedAt, ...topicFields(title + ' ' + description) };
+  return { title, summary, body, author, company: '', publishedAt, ...topicFields(title + ' ' + description + ' ' + transcript.slice(0, 12000)) };
 }
 
 export async function collect(input: string, options: CollectionOptions = {}) {
