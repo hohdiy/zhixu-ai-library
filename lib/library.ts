@@ -1,11 +1,12 @@
 import { env } from 'cloudflare:workers';
+import { readFeedRegistry } from './feed-registry';
 import { getDb } from '@/db';
 import { sources, briefs } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { collect, safeUrl } from './collector';
 import { TOPICS, topicName } from './topics';
 import { z } from 'zod';
-export async function readLibrary(full=false){const db=getDb();const items=await db.select().from(sources).orderBy(desc(sources.collectedAt)).limit(500);return {sources:full?items:items.map(s=>({...s,body:''})),briefs:await db.select().from(briefs).orderBy(desc(briefs.createdAt)).limit(50),topics:TOPICS};}
+export async function readLibrary(full=false){const db=getDb();const items=await db.select().from(sources).orderBy(desc(sources.collectedAt)).limit(500);return {sources:full?items:items.map(s=>({...s,body:''})),briefs:await db.select().from(briefs).orderBy(desc(briefs.createdAt)).limit(50),topics:TOPICS,...(full?{feedRegistry:await readFeedRegistry()}:{} )};}
 export async function addSource(input:unknown){const arg=z.object({url:z.string().max(3000),topic:z.string().optional()}).parse(input);const url=safeUrl(arg.url);const db=getDb();const existing=await db.select().from(sources).where(eq(sources.url,url)).limit(1);if(existing.length)return {source:existing[0],duplicate:true}; const id=crypto.randomUUID();const now=new Date().toISOString();await db.insert(sources).values({id,url,title:new URL(url).hostname,collectedAt:now,topic:TOPICS.some(t=>t.id===arg.topic)?arg.topic:'unclassified'});
  try{const data=await collect(url, {readerApiKey:env.JINA_API_KEY,bilibiliApiUrl:env.BILIBILI_MCP_API_URL,bilibiliApiToken:env.BILIBILI_MCP_API_TOKEN});if(arg.topic&&TOPICS.some(t=>t.id===arg.topic)){data.topic=arg.topic;data.topics=JSON.stringify([...new Set([arg.topic,...JSON.parse(data.topics)])]);}await db.update(sources).set({...data,status:'pending'}).where(eq(sources.id,id));}catch(e){await db.update(sources).set({status:'failed',error:e instanceof Error?e.message:'来源读取失败，可重试'}).where(eq(sources.id,id));}
  return {source:(await db.select().from(sources).where(eq(sources.id,id)))[0],duplicate:false};}

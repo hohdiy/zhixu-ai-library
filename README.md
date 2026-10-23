@@ -61,3 +61,9 @@ node scripts/test-collector-workerd.mjs
 配置后 BV 链接及其 b23 短链优先走该服务，不回退到 Jina；AV 链接保持原公开接口路径。成功获取字幕时保存带秒数的字幕并标记“AI生成，待研读”；字幕缺失、服务错误、转写超时或格式异常时保留元信息与明确的字幕状态，不会把错误提示存成字幕。上游字幕接口固定读取第一分P，因此网站对其他分P仅采集对应元信息，不混用第一分P字幕。
 
 验证：`node scripts/test-bilibili-mcp.mjs` 覆盖服务协议和失败边界，`node scripts/test-collector-workerd.mjs` 覆盖实际 Worker 运行时。模拟测试通过不能替代原始视频的线上验收；服务地址和登录凭据尚未配置时，Issue 应保持打开。
+
+## AI 信源库
+
+网站“信源库”收录 38 个经检索精选的官方、项目、论文社区、作者通讯与中文资讯入口，覆盖六个研究主题。核心/拓展是编辑优先级，卡片频率是巡检建议。入口核对日期不代表实际采集时间；动态或访问受限入口单独标识。
+
+`data/feed-registry.json` 保存公开精选目录；D1 `feed_registry` 保存关注覆盖设置和用户自定义信源。支持搜索、主题/类型/语言筛选、关注暂停、自定义信源增删和 JSON 导出。`GET /api/feeds` 提供清单，`POST /api/feeds` 支持 follow/add/remove；完整研究接口和 list_library 同时返回 feedRegistry，供研究助手按关注清单选题。日任务的既定时刻保持不变，此变更不创建独立轮询器，也不将首页批量收录为文章。

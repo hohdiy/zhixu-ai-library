@@ -1,0 +1,725 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI News",
+    "url": "https://openai.com/news/",
+    "kind": "official",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "模型与产品发布的一手入口，便于追溯技术报告和实际能力变化。",
+    "note": "厂商自述与基准结果需结合论文和独立评测。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "anthropic",
+    "name": "Anthropic Research",
+    "url": "https://www.anthropic.com/research",
+    "kind": "official",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "覆盖模型研究、工程、安全及 AI 对工作和经济的影响。",
+    "note": "研究首页也可进入 Engineering 与 Economics 分类。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "deepmind",
+    "name": "Google DeepMind",
+    "url": "https://deepmind.google/blog/",
+    "kind": "official",
+    "topics": [
+      "model",
+      "reasoning",
+      "rsi",
+      "embodied"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "连接 Gemini、机器人、AI for Science 和自动发现方向的一手研究。",
+    "note": "区分研究演示、产品可用性及真实部署。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "meta",
+    "name": "Meta AI",
+    "url": "https://ai.meta.com/blog/",
+    "kind": "official",
+    "topics": [
+      "model",
+      "embodied"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "追踪 Meta 的基础模型、多模态和开源研究。",
+    "note": "官方发布需要与模型卡及代码相互核对。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA Technical Blog",
+    "url": "https://developer.nvidia.com/blog/",
+    "kind": "official",
+    "topics": [
+      "reasoning",
+      "agent",
+      "embodied"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "关注推理性能、GPU 软件栈、机器人与 Agent 的技术实现。",
+    "note": "性能数据需保留硬件、精度及工作负载条件。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "google-research",
+    "name": "Google Research",
+    "url": "https://research.google/blog/",
+    "kind": "official",
+    "topics": [
+      "model",
+      "reasoning",
+      "rsi",
+      "embodied"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "从算法与论文层面补充模型、科学发现及机器人研究。",
+    "note": "与 DeepMind 分开记录，避免混淆研究团队。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "microsoft-research",
+    "name": "Microsoft Research",
+    "url": "https://www.microsoft.com/en-us/research/blog/",
+    "kind": "official",
+    "topics": [
+      "model",
+      "agent",
+      "rsi",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "研究论文、Agent 系统及企业应用之间的重要连接入口。",
+    "note": "区分科研原型与正式产品发布。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "huggingface",
+    "name": "Hugging Face Blog",
+    "url": "https://huggingface.co/blog",
+    "kind": "community",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "embodied"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "开放模型、训练推理实践和社区技术文章聚集地。",
+    "note": "同时包含官方与社区作者，逐篇核对署名。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true,
+    "feedUrl": "https://huggingface.co/blog/feed.xml"
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek 官方项目",
+    "url": "https://github.com/deepseek-ai",
+    "kind": "project",
+    "topics": [
+      "model",
+      "reasoning"
+    ],
+    "language": "multi",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "通过官方仓库追踪模型、技术报告及推理系统的公开进展。",
+    "note": "组织页作为发现入口，事实优先回溯具体仓库与报告。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "qwen",
+    "name": "Qwen 通义千问",
+    "url": "https://qwen.ai/blog",
+    "kind": "official",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent"
+    ],
+    "language": "multi",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "国内开放模型、多模态、推理与 Agent 进展的一手入口。",
+    "note": "旧博客已指向 qwen.ai；页面依赖动态加载。",
+    "verifiedAt": "2026-10-23",
+    "verification": "limited",
+    "following": true
+  },
+  {
+    "id": "moonshot",
+    "name": "Moonshot / Kimi 官方项目",
+    "url": "https://github.com/MoonshotAI",
+    "kind": "project",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent"
+    ],
+    "language": "multi",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "关注 Kimi 模型及相关开放研究和推理组件。",
+    "note": "代码或权重的发布不等同于所有产品能力已开放。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "minimax",
+    "name": "MiniMax 官方项目",
+    "url": "https://github.com/MiniMax-AI",
+    "kind": "project",
+    "topics": [
+      "model",
+      "agent"
+    ],
+    "language": "multi",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "追踪 MiniMax 开放模型、技术报告及工具生态。",
+    "note": "以具体项目和模型卡为准。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "mistral",
+    "name": "Mistral News",
+    "url": "https://mistral.ai/news/",
+    "kind": "official",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "欧洲模型团队的模型、语音、编码和企业部署发布。",
+    "note": "技术研究与商业合作公告分开研读。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "zai",
+    "name": "智谱 / Z.ai 官方项目",
+    "url": "https://github.com/zai-org",
+    "kind": "project",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent"
+    ],
+    "language": "multi",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "追踪 GLM 系列、视觉及代码智能体的公开项目。",
+    "note": "旧组织名与现名可能并存，优先使用当前官方组织。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "vllm",
+    "name": "vLLM Blog",
+    "url": "https://vllm.ai/blog",
+    "kind": "project",
+    "topics": [
+      "reasoning",
+      "agent"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "推理吞吐、KV cache、量化与新模型适配的技术细节。",
+    "note": "原 blog.vllm.ai 已迁移；性能结论需带测试环境。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "sglang",
+    "name": "SGLang 官方项目",
+    "url": "https://github.com/sgl-project/sglang",
+    "kind": "project",
+    "topics": [
+      "reasoning",
+      "agent"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "结构化生成、推理服务及大模型执行优化的开源进展。",
+    "note": "通过 Release 与项目文档核对支持范围。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "langchain",
+    "name": "LangChain Blog",
+    "url": "https://www.langchain.com/blog",
+    "kind": "project",
+    "topics": [
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "Agent 架构、LangGraph、评测和生产案例的工程信息。",
+    "note": "原 blog.langchain.com 会重定向至当前入口。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "llamaindex",
+    "name": "LlamaIndex Blog",
+    "url": "https://www.llamaindex.ai/blog",
+    "kind": "project",
+    "topics": [
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "文档处理、检索和企业 Agent 工作流的工程实践。",
+    "note": "应用案例为供应商材料，需检查实际约束和评测。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "mcp",
+    "name": "MCP 官方博客",
+    "url": "https://blog.modelcontextprotocol.io/",
+    "kind": "project",
+    "topics": [
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "由协议维护者发布的路线图、规范和工具互联动态。",
+    "note": "规范发布、SDK 实现和客户端支持时间可能不同。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "sakana",
+    "name": "Sakana AI",
+    "url": "https://sakana.ai/",
+    "kind": "official",
+    "topics": [
+      "rsi",
+      "reasoning",
+      "model"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "自动科研、进化式方法与递归改进相关研究的一手入口。",
+    "note": "实验范围内的自改进不等于已实现通用 RSI。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "autoresearch",
+    "name": "Karpathy / autoresearch",
+    "url": "https://github.com/karpathy/autoresearch",
+    "kind": "project",
+    "topics": [
+      "rsi",
+      "agent",
+      "model"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "面向自动研究循环的公开实验代码，可核对目标和评估机制。",
+    "note": "把实验设定、资源边界与泛化结论分开。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "physical-intelligence",
+    "name": "Physical Intelligence",
+    "url": "https://www.pi.website/blog",
+    "kind": "official",
+    "topics": [
+      "embodied",
+      "model",
+      "reasoning"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "通用机器人策略与视觉语言动作模型的直接研究入口。",
+    "note": "旧 physicalintelligence.company 已迁移到 pi.website。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "figure",
+    "name": "Figure News",
+    "url": "https://www.figure.ai/news",
+    "kind": "official",
+    "topics": [
+      "embodied",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "人形机器人、Helix 及工业部署进展的官方记录。",
+    "note": "演示、试点与规模部署必须区分。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "lerobot",
+    "name": "Hugging Face LeRobot",
+    "url": "https://github.com/huggingface/lerobot",
+    "kind": "project",
+    "topics": [
+      "embodied",
+      "model"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "开放机器人学习代码、硬件与数据生态的社区项目。",
+    "note": "具体硬件和数据条件影响复现结果。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "unitree",
+    "name": "宇树科技新闻",
+    "url": "https://www.unitree.com/news/",
+    "kind": "official",
+    "topics": [
+      "embodied",
+      "workforce"
+    ],
+    "language": "multi",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "国内机器人硬件、产品和生态进展的一手入口。",
+    "note": "硬件展示与自主能力验证分开记录。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "hf-papers",
+    "name": "Hugging Face Daily Papers",
+    "url": "https://huggingface.co/papers",
+    "kind": "community",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "rsi",
+      "embodied"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "通过社区提交与讨论发现近期高关注论文。",
+    "note": "社区票数用于发现线索，不作为论文正确性证明。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "arxiv-ai",
+    "name": "arXiv · cs.AI",
+    "url": "https://arxiv.org/list/cs.AI/recent",
+    "kind": "community",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "rsi"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "人工智能预印本的广覆盖研究入口。",
+    "note": "预印本未必经过同行评审，按主题筛选，避免全量收录。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "latent-space",
+    "name": "Latent Space",
+    "url": "https://www.latent.space/",
+    "kind": "newsletter",
+    "topics": [
+      "agent",
+      "reasoning",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "面向 AI 工程师的技术通讯与访谈，连接模型、基础设施和 Agent。",
+    "note": "网站自述订阅数超过 20 万（2026-10-23），部分内容可能需要订阅。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true,
+    "feedUrl": "https://www.latent.space/feed"
+  },
+  {
+    "id": "ahead-of-ai",
+    "name": "Ahead of AI / Sebastian Raschka",
+    "url": "https://magazine.sebastianraschka.com/",
+    "kind": "newsletter",
+    "topics": [
+      "model",
+      "reasoning"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "研究者视角的模型架构、训练和推理技术解读。",
+    "note": "网站自述订阅数超过 22 万（2026-10-23），观点需回溯原论文。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "simon-willison",
+    "name": "Simon Willison",
+    "url": "https://simonwillison.net/",
+    "kind": "newsletter",
+    "topics": [
+      "model",
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "持续的 LLM 实测、工具使用和 Agent 工程观察。",
+    "note": "个人站也包含非 AI 内容；只筛选相关主题。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true,
+    "feedUrl": "https://simonwillison.net/atom/everything/"
+  },
+  {
+    "id": "import-ai",
+    "name": "Import AI / Jack Clark",
+    "url": "https://importai.substack.com/",
+    "kind": "newsletter",
+    "topics": [
+      "model",
+      "rsi",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "研究与行业趋势通讯，适合补充跨机构观察。",
+    "note": "页面动态加载；作者解读与原始研究证据分开。",
+    "verifiedAt": "2026-10-23",
+    "verification": "limited",
+    "following": false
+  },
+  {
+    "id": "the-batch",
+    "name": "The Batch / DeepLearning.AI",
+    "url": "https://www.deeplearning.ai/the-batch/",
+    "kind": "newsletter",
+    "topics": [
+      "model",
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "AI 研究和产业动态的综合选题入口。",
+    "note": "本次直接读取返回 403，保留候选入口，后续需验证访问。",
+    "verifiedAt": "2026-10-23",
+    "verification": "limited",
+    "following": false
+  },
+  {
+    "id": "jiqizhixin",
+    "name": "机器之心",
+    "url": "https://www.jiqizhixin.com/",
+    "kind": "media",
+    "topics": [
+      "model",
+      "reasoning",
+      "agent",
+      "embodied"
+    ],
+    "language": "zh",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "中文 AI 研究、模型与产业资讯的选题入口。",
+    "note": "含会员内容；从报道回溯论文、代码及官方公告。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "qbitai",
+    "name": "量子位",
+    "url": "https://www.qbitai.com/",
+    "kind": "media",
+    "topics": [
+      "model",
+      "agent",
+      "embodied",
+      "workforce"
+    ],
+    "language": "zh",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "中文 AI 产品、研究和产业新闻的发现入口。",
+    "note": "本次读取超时，保留候选入口；新闻事实应回溯一手来源。",
+    "verifiedAt": "2026-10-23",
+    "verification": "limited",
+    "following": false
+  },
+  {
+    "id": "worklab",
+    "name": "Microsoft WorkLab",
+    "url": "https://www.microsoft.com/en-us/worklab",
+    "kind": "official",
+    "topics": [
+      "workforce",
+      "agent"
+    ],
+    "language": "en",
+    "priority": "core",
+    "cadence": "daily",
+    "reason": "工作趋势、组织采用 AI 和数字员工影响的研究入口。",
+    "note": "调查方法、样本与厂商立场需保留。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": true
+  },
+  {
+    "id": "salesforce",
+    "name": "Salesforce AI Research",
+    "url": "https://www.salesforce.com/blog/category/ai-research/",
+    "kind": "official",
+    "topics": [
+      "workforce",
+      "agent",
+      "model"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "企业 Agent、客户业务和应用研究的官方材料。",
+    "note": "供应商研究与独立效果评估分开。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "uipath",
+    "name": "UiPath AI Blog",
+    "url": "https://www.uipath.com/blog/ai",
+    "kind": "official",
+    "topics": [
+      "workforce",
+      "agent"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "流程自动化、数字员工与 Agent 编排的产品和实践线索。",
+    "note": "客户案例与产品宣传需核对可测结果。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  },
+  {
+    "id": "aws-ml",
+    "name": "AWS Machine Learning Blog",
+    "url": "https://aws.amazon.com/blogs/machine-learning/",
+    "kind": "official",
+    "topics": [
+      "reasoning",
+      "agent",
+      "workforce"
+    ],
+    "language": "en",
+    "priority": "extended",
+    "cadence": "weekly",
+    "reason": "云上推理、Agent 和企业 AI 部署的实现案例。",
+    "note": "云产品成本、权限与区域可用性逐篇核对。",
+    "verifiedAt": "2026-10-23",
+    "verification": "checked",
+    "following": false
+  }
+]
