@@ -23,7 +23,7 @@ try {
     const url = String(input); requests.push({ url, options });
     if (url === 'https://b23.tv/testVideo') return new Response(null, { status: 302, headers: { location: canonical + '?share_session_id=private&p=1' } });
     assert.equal(url, 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvid);
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.headers.Cookie, undefined);
     return json(sample);
   };

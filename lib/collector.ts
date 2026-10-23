@@ -84,7 +84,7 @@ async function readBilibiliViaReader(apiUrl: string) {
   let response: Response;
   try {
     response = await fetch('https://r.jina.ai/' + apiUrl, {
-      redirect: 'error', signal: AbortSignal.timeout(25000),
+      redirect: 'manual', signal: AbortSignal.timeout(25000),
       headers: { Accept: 'application/json', DNT: '1' },
     });
   } catch {
@@ -111,7 +111,7 @@ async function readBilibiliMetadata(apiUrl: string) {
   let response: Response;
   try {
     response = await fetch(apiUrl, {
-      redirect: 'error', signal: AbortSignal.timeout(16000),
+      redirect: 'manual', signal: AbortSignal.timeout(16000),
       headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
     });
   } catch {
