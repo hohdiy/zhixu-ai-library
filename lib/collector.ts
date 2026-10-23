@@ -4,6 +4,8 @@ const USER_AGENT = 'ZhixuLibrary/1.0 (personal research collector)';
 const REDIRECTS = [301, 302, 303, 307, 308];
 const MAX_BYTES = 2_000_000;
 
+export type CollectionOptions = { readerApiKey?: string };
+
 type BilibiliVideo = { canonicalUrl: string; bvid?: string; aid?: string; page: number };
 
 export function bilibiliVideo(input: string): BilibiliVideo | null {
@@ -78,20 +80,31 @@ function topicFields(text: string) {
   return { topic: topics[0] || 'unclassified', topics: JSON.stringify(topics) };
 }
 
-async function readBilibiliViaReader(apiUrl: string) {
+async function readBilibiliViaReader(apiUrl: string, options: CollectionOptions) {
   // Only the fixed public API URL and validated video ID go to the reader.
   // Never forward share parameters, visitor identity, cookies or Site credentials.
+  const readerKey = options.readerApiKey?.trim();
+  const headers: Record<string, string> = { Accept: 'application/json', DNT: '1' };
+  if (readerKey) headers.Authorization = 'Bearer ' + readerKey;
   let response: Response;
   try {
     response = await fetch('https://r.jina.ai/' + apiUrl, {
       redirect: 'manual', signal: AbortSignal.timeout(25000),
-      headers: { Accept: 'application/json', DNT: '1' },
+      headers,
     });
   } catch {
     throw new Error('B站元信息直接读取和公开读取服务均连接失败或超时，已保留链接，可稍后重试');
   }
   if (!response.ok) {
     await response.body?.cancel();
+    if (response.status === 429) {
+      throw new Error(readerKey
+        ? 'B站读取服务限流（HTTP 429），请稍后重试或检查读取服务额度'
+        : 'B站读取服务匿名请求限流（HTTP 429），可配置服务端 JINA_API_KEY 后重试');
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`B站读取服务鉴权失败（HTTP ${response.status}），请检查服务端 JINA_API_KEY`);
+    }
     throw new Error(`B站公开读取服务暂时不可用（HTTP ${response.status}），已保留链接，可稍后重试`);
   }
   try {
@@ -107,7 +120,7 @@ async function readBilibiliViaReader(apiUrl: string) {
   }
 }
 
-async function readBilibiliMetadata(apiUrl: string) {
+async function readBilibiliMetadata(apiUrl: string, options: CollectionOptions) {
   let response: Response;
   try {
     response = await fetch(apiUrl, {
@@ -115,12 +128,12 @@ async function readBilibiliMetadata(apiUrl: string) {
       headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
     });
   } catch {
-    return { result: await readBilibiliViaReader(apiUrl), viaReader: true };
+    return { result: await readBilibiliViaReader(apiUrl, options), viaReader: true };
   }
   if (!response.ok) {
     await response.body?.cancel();
     if (response.status === 412 || response.status >= 500) {
-      return { result: await readBilibiliViaReader(apiUrl), viaReader: true };
+      return { result: await readBilibiliViaReader(apiUrl, options), viaReader: true };
     }
     // Do not retry permission or rate-limit responses through another service.
     throw new Error(`B站公开视频信息暂时读取受限（HTTP ${response.status}），已保留链接，可稍后重试`);
@@ -133,9 +146,9 @@ async function readBilibiliMetadata(apiUrl: string) {
   }
 }
 
-async function collectBilibili(video: BilibiliVideo) {
+async function collectBilibili(video: BilibiliVideo, options: CollectionOptions) {
   const query = new URLSearchParams(video.bvid ? { bvid: video.bvid } : { aid: video.aid! });
-  const { result, viaReader } = await readBilibiliMetadata('https://api.bilibili.com/x/web-interface/view?' + query);
+  const { result, viaReader } = await readBilibiliMetadata('https://api.bilibili.com/x/web-interface/view?' + query, options);
   if (result?.code !== 0) {
     const code = typeof result?.code === 'number' ? result.code : '未知';
     throw new Error(`B站视频不可公开读取（${code}），可能已删除或需要权限，已保留链接`);
@@ -173,12 +186,12 @@ async function collectBilibili(video: BilibiliVideo) {
   return { title, summary, body, author, company: '', publishedAt, ...topicFields(title + ' ' + description) };
 }
 
-export async function collect(input: string) {
+export async function collect(input: string, options: CollectionOptions = {}) {
   let url = safeUrl(input);
   let response: Response | undefined;
   for (let redirects = 0; redirects <= 4; redirects++) {
     const video = bilibiliVideo(url);
-    if (video) return collectBilibili(video);
+    if (video) return collectBilibili(video, options);
     response = await fetch(url, {
       redirect: 'manual', signal: AbortSignal.timeout(16000),
       headers: { 'User-Agent': USER_AGENT, Accept: 'text/html,application/xhtml+xml,text/plain' },

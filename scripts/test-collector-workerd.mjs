@@ -12,8 +12,8 @@ const { TOPICS } = await import('data:text/javascript;base64,' + Buffer.from(top
 const collector = compile(await fs.readFile(new URL('../lib/collector.ts', import.meta.url), 'utf8'))
   .replace(/import \{ TOPICS \} from ['"]\.\/topics['"];?/, 'const TOPICS = ' + JSON.stringify(TOPICS) + ';');
 const script = collector + `
-export default { async fetch(request) {
-  try { return Response.json(await collect(new URL(request.url).searchParams.get('url'))); }
+export default { async fetch(request, env) {
+  try { return Response.json(await collect(new URL(request.url).searchParams.get('url'), {readerApiKey: env.JINA_API_KEY})); }
   catch (error) { return Response.json({error:error.message},{status:400}); }
 }};`;
 const config = { modules: true, script, compatibilityDate: '2026-05-15', compatibilityFlags: ['nodejs_compat'] };
@@ -25,15 +25,17 @@ const reader = 'https://r.jina.ai/' + api;
 const metadata = { code: 0, data: { bvid, title: 'Agent 运行时测试', owner: { name: '测试UP主' }, pubdate: 1710000000, desc: '公开视频简介' } };
 let mode = 'direct';
 let requests = [];
-const fixtureRuntime = new Miniflare({ ...config, outboundService: async request => {
+const fixtureRuntime = new Miniflare({ ...config, bindings: {JINA_API_KEY:'test-runtime-reader-key'}, outboundService: async request => {
   requests.push(request.url);
   if (request.url === short) return new Response(null, { status: 302, headers: { location: canonical } });
   if (request.url === api) {
+    assert.equal(request.headers.get('Authorization'), null);
     if (mode === 'api-redirect') return new Response(null, { status: 302, headers: { location: 'https://unexpected.com/' } });
     if (mode !== 'direct') return new Response('unavailable', { status: 503 });
     return Response.json(metadata);
   }
   if (request.url === reader) {
+    assert.equal(request.headers.get('Authorization'), 'Bearer test-runtime-reader-key');
     if (mode === 'reader-redirect') return new Response(null, { status: 302, headers: { location: 'https://unexpected.com/' } });
     return Response.json({ data: { url: api, content: JSON.stringify(metadata) } });
   }

@@ -131,6 +131,23 @@ try {
   await assert.rejects(() => collect(canonical), /HTTP 429/); cases++;
   globalThis.fetch = fallbackResponse(() => new Response('x'.repeat(2_000_001)));
   await assert.rejects(() => collect(canonical), /来源页面过大/); cases++;
+  const fakeKey = 'test-reader-key-not-a-real-secret';
+  const authenticatedCalls = [];
+  globalThis.fetch = async (input, options) => {
+    authenticatedCalls.push({ url: String(input), headers: options.headers });
+    if (String(input) === apiUrl) { assert.equal(options.headers.Authorization, undefined); throw new Error('ECONNRESET'); }
+    assert.equal(String(input), readerUrl);
+    assert.equal(options.headers.Authorization, 'Bearer ' + fakeKey);
+    return envelope();
+  };
+  const authenticated = await collect(canonical, { readerApiKey: fakeKey });
+  assert.equal(authenticatedCalls.length, 2);
+  assert.ok(!JSON.stringify(authenticated).includes(fakeKey)); cases++;
+  globalThis.fetch = fallbackResponse(() => new Response('unauthorized', { status: 401 }));
+  await assert.rejects(() => collect(canonical, { readerApiKey: fakeKey }), /鉴权失败.*HTTP 401/); cases++;
+  globalThis.fetch = fallbackResponse(() => new Response('rate limited', { status: 429 }));
+  await assert.rejects(() => collect(canonical, { readerApiKey: fakeKey }), /读取服务限流.*HTTP 429/); cases++;
+  await assert.rejects(() => collect(canonical), /匿名请求限流.*JINA_API_KEY/); cases++;
   console.log(`PASS: ${cases} Bilibili cases (short/direct/mobile/av URLs, public metadata, parts, evidence boundaries, inaccessible videos, response limits and redirect validation)`);
 } finally { globalThis.fetch = original; }
 
