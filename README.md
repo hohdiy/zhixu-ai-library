@@ -29,3 +29,13 @@ npm run dev
 
 ## 自动研究
 见 RESEARCH.md。站内工具支持读取资料、收藏链接、保存来源分析和发布简报。没有在浏览器中存放模型密钥。站内“生成资料简报”是确定性的资料汇编，不能代替人工或模型研读。
+
+## 采集回归测试
+
+```
+node scripts/test-collector.mjs
+node scripts/test-bilibili-collector.mjs
+node scripts/test-collector-workerd.mjs
+```
+
+最后一项运行实际 workerd，而非模拟 Node fetch，覆盖短链、官方接口、公开读取容错及手动拒绝重定向。可追加 `--live <公开链接...>` 进行真实采集验证。
