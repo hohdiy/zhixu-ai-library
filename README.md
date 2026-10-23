@@ -43,3 +43,21 @@ node scripts/test-collector-workerd.mjs
 ## B站读取服务的生产配置
 
 若生产环境无法直连 B站且匿名读取服务出现 HTTP 429，可在 Sites 中将 `JINA_API_KEY` 配置为服务端 Secret，随后重新部署已保存的版本以应用配置。密钥仅用于固定 Jina Reader HTTPS 端点，不发送至 B站、不跟随重定向、不返回浏览器、不写入资料或源码。使用自己的读取服务额度，账户配置完成后仍需线上重试验收；未配置时保留匿名路径和明确的限流提示。
+
+## 使用 bilibili-mcp 采集 B站
+
+支持 [L-Chris/bilibili-mcp](https://github.com/L-Chris/bilibili-mcp) 的 Flask REST 接口。它需要独立的 Python 服务；当前 Sites 的 Cloudflare Worker 负责调用，不会在 Worker 内启动 Python。Jina 配置功能保留，无需购买或配置 Jina 才能使用此路径。
+
+部署采集服务后，在 Sites 配置服务端环境变量并重新部署：
+
+- `BILIBILI_MCP_API_URL`：可公开访问的 HTTPS 服务根地址，可含部署路径前缀，不能含用户名、密码、查询参数或片段。不是 `/sse` MCP 地址。
+- `BILIBILI_MCP_API_TOKEN`：网关 Bearer 认证密钥，设为 Secret。原项目 Flask API 没有内置此认证，需要部署方在网关配置认证及只读路由。
+- B站登录凭据 `sessdata`、`bili_jct`、`buvid3` 仅配置在 Python 采集服务，不放入网站、GitHub 或前端。
+
+原项目使用 `FastMCP` v1 接口；安装时需添加 `mcp<2` 约束以免未锁定依赖升级导致启动失败。上线前应固定并审查上游版本与依赖版本。
+
+网站只调用 `GET /api/video/info/<bvid>` 和 `GET /api/video/subtitle/<bvid>?format=raw`。服务应只对网站开放这两类读取路由，不必暴露评论发送或任意媒体 URL 转写接口。它并不保证绕过 B站网络、登录或访问限制，仍需在目标部署环境真实验证。
+
+配置后 BV 链接及其 b23 短链优先走该服务，不回退到 Jina；AV 链接保持原公开接口路径。成功获取字幕时保存带秒数的字幕并标记“AI生成，待研读”；字幕缺失、服务错误、转写超时或格式异常时保留元信息与明确的字幕状态，不会把错误提示存成字幕。上游字幕接口固定读取第一分P，因此网站对其他分P仅采集对应元信息，不混用第一分P字幕。
+
+验证：`node scripts/test-bilibili-mcp.mjs` 覆盖服务协议和失败边界，`node scripts/test-collector-workerd.mjs` 覆盖实际 Worker 运行时。模拟测试通过不能替代原始视频的线上验收；服务地址和登录凭据尚未配置时，Issue 应保持打开。
