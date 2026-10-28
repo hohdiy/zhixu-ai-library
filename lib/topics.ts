@@ -6,6 +6,6 @@ export const TOPICS = [
  {id:'embodied', name:'具身智能', en:'Embodied intelligence', description:'机器人、世界模型与物理环境交互', color:'#6d8e99', icon:'⊞'},
  {id:'workforce', name:'数字员工', en:'Digital workforce', description:'工作流、岗位协作与企业落地', color:'#9b7c9c', icon:'▦'}
 ];
-export type Source = {id:string;url:string;title:string;summary:string;body:string;topic:string;topics:string;author:string;company:string;publishedAt:string|null;collectedAt:string;status:string;facts:string;insight:string;error:string;starred:string};
+export type Source = {id:string;url:string;title:string;summary:string;body:string;topic:string;topics:string;author:string;company:string;publishedAt:string|null;collectedAt:string;status:string;facts:string;insight:string;error:string;starred:string;feedId?:string|null;researchRunId?:string|null;analyzedAt?:string|null;readingError?:string;readingAttemptedAt?:string|null};
 export type Brief = {id:string;title:string;body:string;sourceIds:string;createdAt:string;kind:string};
 export function topicName(id:string){return TOPICS.find(t=>t.id===id)?.name || (id==='unclassified'?'待分类':id);}

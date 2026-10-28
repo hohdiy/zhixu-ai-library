@@ -1,0 +1,69 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { DatabaseSync } from 'node:sqlite';
+import { testModules } from './test-module-loader.mjs';
+const db = new DatabaseSync(':memory:');
+for (const file of ['0000_flaky_shriek.sql','0001_dark_mindworm.sql','0002_fair_mentallo.sql']) db.exec(await fs.readFile(new URL('../drizzle/' + file, import.meta.url), 'utf8'));
+function prepare(sql) {
+  let values = [];
+  return { bind(...args) { values = args; return this; }, async all() { return { results: db.prepare(sql).all(...values), success: true }; }, async raw() { return db.prepare(sql).all(...values).map(row => Object.values(row)); }, async first() { return db.prepare(sql).get(...values) || null; }, async run() { const result = db.prepare(sql).run(...values); return { success: true, meta: { changes: Number(result.changes), last_row_id: Number(result.lastInsertRowid) } }; } };
+}
+globalThis.__researchTestEnv = { DB: { prepare, async batch(statements) { return Promise.all(statements.map(s => s.run())); } } };
+const modules = await testModules(); const original = globalThis.fetch;
+try {
+  const { researchControl } = await modules.load('lib/research-runner.ts');
+  const { saveAnalysis, saveBrief } = await modules.load('lib/library.ts');
+  const { parseFeed, parseIndex, normalizedArticleUrl } = await modules.load('lib/feed-discovery.ts');
+  assert.equal(parseFeed('<feed><entry><link rel="self" href="https://feed.valid-domain.com/api"/><link rel="alternate" href="https://feed.valid-domain.com/p/article"/><title>Hello</title></entry></feed>', 'https://feed.valid-domain.com/')[0].url, 'https://feed.valid-domain.com/p/article');
+  assert.equal(parseFeed('<rss><item><title>Test</title><link>http://127.0.0.1/</link></item></rss>', 'https://feed.valid-domain.com').length, 0);
+  assert.equal(parseIndex('<nav><a href="/index/menu/">Navigation placeholder title</a></nav><a href="https://evil.valid-domain.com/index/a/">Wrong host article title</a><a href="/index/actual/">Actual research article title</a>', 'https://openai.com/news/', 'openai').length, 1);
+  assert.equal(normalizedArticleUrl('https://openai.com/index/article/?utm_source=a#hash'), 'https://openai.com/index/article');
+  assert.equal(parseIndex('<a href="/posts/release/" aria-label="post link to New protocol release"></a>', 'https://blog.modelcontextprotocol.io/', 'mcp')[0].title, 'New protocol release');
+  assert.equal(parseIndex('<a href="/blog/research/"><h3>Concrete research result</h3><p>' + 'long preview '.repeat(100) + '</p></a>', 'https://deepmind.google/blog/', 'deepmind')[0].title, 'Concrete research result');
+  await assert.rejects(() => researchControl({ action: 'start' }), /尚未启用/);
+  const settings = await researchControl({ action: 'configure', enabled: true }); assert.equal(settings.configuredCount, 26);
+  const run = await researchControl({ action: 'start', runKey: 'test-first' });
+  assert.equal(run.feedIds.length, 26); assert.equal((await researchControl({ action: 'start', runKey: 'test-first' })).id, run.id);
+  await assert.rejects(() => researchControl({ action: 'finish', runId: run.id }), /尚未检查/);
+  let articleRequests = 0;
+  globalThis.fetch = async input => {
+    const url = String(input);
+    if (url === 'https://openai.com/news/') return new Response('<a href="/index/research-fixture/">A concrete research fixture article</a><a href="/index/research-fixture/?utm_source=test">Duplicate article title</a>');
+    if (url === 'https://openai.com/index/research-fixture/') { articleRequests++; return new Response('<title>Research fixture</title><meta name="description" content="A verified fixture description"><article>Source material contains one concrete result.</article>', { headers: { 'Content-Type': 'text/html' } }); }
+    return new Response('restricted', { status: 403 });
+  };
+  await Promise.all([researchControl({ action: 'check', runId: run.id, feedId: 'openai' }), researchControl({ action: 'check', runId: run.id, feedId: 'openai' })]);
+  assert.equal(articleRequests, 1);
+  for (const feedId of run.feedIds.filter(id => id !== 'openai')) await researchControl({ action: 'check', runId: run.id, feedId });
+  let status = await researchControl({ action: 'status', runId: run.id });
+  assert.equal(status.counts.checked, 26); assert.equal(status.counts.newArticles, 1); assert.equal(status.counts.failedFeeds, 25);
+  await assert.rejects(() => researchControl({ action: 'finish', runId: run.id }), /尚未精读/);
+  await assert.rejects(() => researchControl({ action: 'supplement', runId: run.id, feedId: 'anthropic', evidenceUrl: 'https://evil.valid-domain.com/', note: 'A sufficient explanatory note', articles: [] }), /证据/);
+  await researchControl({ action: 'supplement', runId: run.id, feedId: 'anthropic', evidenceUrl: 'https://www.anthropic.com/research', note: '通过原站页面核对，本轮没有额外新增文章。', articles: [] });
+  const queue = await researchControl({ action: 'queue', runId: run.id }); assert.equal(queue.sources.length, 1); assert.match(queue.sources[0].body, /one concrete result/);
+  const source = queue.sources[0];
+  const analysis = { id: source.id, title: 'Fixture research', summary: 'Verified source summary', topic: 'agent', topics: ['agent'], facts: ['The source contains one concrete result.'], insight: 'Analysis, not a source claim.' };
+  await assert.rejects(() => saveAnalysis({ ...analysis, facts: [] }));
+  await saveAnalysis(analysis);
+  assert.equal((await researchControl({ action: 'queue', runId: run.id })).sources.length, 0);
+  await assert.rejects(() => researchControl({ action: 'finish', runId: run.id }), /先按本轮/);
+  await saveBrief({ id: run.briefId, title: 'Daily fixture', body: 'Facts and sources: ' + source.url, sourceIds: [source.id] });
+  await saveBrief({ id: run.briefId, title: 'Daily fixture revised', body: 'Facts and analysis with sources: ' + source.url, sourceIds: [source.id] });
+  status = await researchControl({ action: 'finish', runId: run.id }); assert.equal(status.status, 'partial'); assert.equal(status.counts.ready, 1);
+  assert.equal((await researchControl({ action: 'finish', runId: run.id })).briefId, run.briefId);
+  assert.equal(db.prepare('select count(*) n from briefs').get().n, 1);
+  assert.match(db.prepare('select body from briefs where id=?').get(run.briefId).body, /本轮采集记录/);
+  const second = await researchControl({ action: 'start', runKey: 'test-next' });
+  for (const feedId of second.feedIds) await researchControl({ action: 'check', runId: second.id, feedId });
+  assert.equal((await researchControl({ action: 'status', runId: second.id })).counts.newArticles, 0);
+  await researchControl({ action: 'finish', runId: second.id }); assert.equal(db.prepare('select count(*) n from briefs').get().n, 2);
+  const manualId = crypto.randomUUID();
+  db.prepare("insert into sources (id,url,title,collected_at,status) values (?,?,?,?,'pending')").run(manualId, 'https://manual.valid-domain.com/article', 'Manual item', new Date().toISOString());
+  await researchControl({ action: 'reading_failure', id: manualId, reason: 'Original content unavailable' });
+  assert.equal(db.prepare('select status,reading_error from sources where id=?').get(manualId).status, 'pending');
+  assert.equal((await researchControl({ action: 'queue', runId: second.id })).sources.length, 0);
+  const { POST } = await modules.load('app/api/automation/route.ts');
+  assert.equal((await POST(new Request('https://site.valid-domain.com/api/automation', { method: 'POST', headers: { Origin: 'https://other.valid-domain.com' }, body: '{}' }))).status, 403);
+  assert.equal((await POST(new Request('https://site.valid-domain.com/api/automation', { method: 'POST', body: 'x'.repeat(25001) }))).status, 413);
+  console.log('PASS: real SQLite migrations, 26-source coverage, duplicate-run/lease/URL handling, queue-to-analysis-to-brief flow, source failures, daily brief idempotency, no-new report, reading failure and API boundaries');
+} finally { globalThis.fetch = original; delete globalThis.__researchTestEnv; db.close(); await modules.cleanup(); }
