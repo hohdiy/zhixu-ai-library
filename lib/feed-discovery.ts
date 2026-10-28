@@ -46,7 +46,7 @@ export function parseIndex(html: string, base: string, feedId: string): Candidat
       const u = new URL(match[1].replace(/&amp;/g, '&'), base);
       const heading = match[2].match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i)?.[1];
       const label = match[0].match(/\b(?:aria-label|title)=["']([^"']+)["']/i)?.[1];
-      const title = clean(heading || label || match[2]).replace(/^post link to\s*/i, '');
+      const title = clean(heading || label || match[2]).replace(/^post link to\s*/i, '') || ('待核对标题：' + decodeURIComponent(u.pathname.split('/').filter(Boolean).at(-1) || '').replace(/-/g, ' '));
       if (u.hostname !== home.hostname || !pattern?.test(u.pathname) || title.length < 10 || title.length > 600) return [];
       if (/^(view all|read more|learn more|查看全部|了解更多|Research|Engineering|News)$/i.test(title)) return [];
       if (feedId === 'hf-papers') return [{ url: 'https://arxiv.org/abs/' + u.pathname.split('/').at(-1), title }];

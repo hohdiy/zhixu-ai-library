@@ -19,6 +19,7 @@ try {
   assert.equal(parseIndex('<nav><a href="/index/menu/">Navigation placeholder title</a></nav><a href="https://evil.valid-domain.com/index/a/">Wrong host article title</a><a href="/index/actual/">Actual research article title</a>', 'https://openai.com/news/', 'openai').length, 1);
   assert.equal(normalizedArticleUrl('https://openai.com/index/article/?utm_source=a#hash'), 'https://openai.com/index/article');
   assert.equal(parseIndex('<a href="/posts/release/" aria-label="post link to New protocol release"></a>', 'https://blog.modelcontextprotocol.io/', 'mcp')[0].title, 'New protocol release');
+  assert.match(parseIndex('<a href="/blog/design-agent"></a>', 'https://www.langchain.com/blog', 'langchain')[0].title, /待核对标题/);
   assert.equal(parseIndex('<a href="/blog/research/"><h3>Concrete research result</h3><p>' + 'long preview '.repeat(100) + '</p></a>', 'https://deepmind.google/blog/', 'deepmind')[0].title, 'Concrete research result');
   await assert.rejects(() => researchControl({ action: 'start' }), /尚未启用/);
   const settings = await researchControl({ action: 'configure', enabled: true }); assert.equal(settings.configuredCount, 26);
