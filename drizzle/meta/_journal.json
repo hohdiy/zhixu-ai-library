@@ -15,6 +15,13 @@
       "when": 1792733904026,
       "tag": "0001_dark_mindworm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793158207194,
+      "tag": "0002_fair_mentallo",
+      "breakpoints": true
     }
   ]
 }

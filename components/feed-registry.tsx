@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Rss, Plus, ExternalLink, Check, Pause, Download, Search, X, Loader2, Trash2 } from 'lucide-react';
+import ResearchStatus from './research-status';
 import { TOPICS, topicName } from '@/lib/topics';
 import { FEED_KINDS, type FeedEntry, type FeedKind } from '@/lib/feed-types';
 
@@ -45,7 +46,8 @@ export default function FeedRegistry({ search, onSearch }: { search: string; onS
     <div className="feed-controls"><label className="feed-search"><Search size={16}/><input aria-label="搜索信源" placeholder="搜索信源、团队、研究方向…" value={search} onChange={e => onSearch(e.target.value)}/></label><div className="feed-control-actions"><button className="button secondary" onClick={exportFeeds} disabled={!feeds.length}><Download size={14}/>导出清单</button><button className="button primary" onClick={() => { setShowAdd(true); setError(''); }}><Plus size={15}/>添加信源</button></div></div>
     <div className="filter-bar feed-topic-filter"><div className="filter-scroll">{[{ id: 'all', name: '全部主题' }, ...TOPICS].map(t => <button key={t.id} className={topic === t.id ? 'selected' : ''} onClick={() => setTopic(t.id)}>{t.name}</button>)}</div></div>
     <div className="feed-selects"><select aria-label="信源类型" value={kind} onChange={e => setKind(e.target.value)}><option value="all">全部类型</option>{Object.entries(FEED_KINDS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select><select aria-label="信源语言" value={language} onChange={e => setLanguage(e.target.value)}><option value="all">全部语言</option><option value="zh">中文</option><option value="en">英文</option><option value="multi">中英 / 多语言</option></select><label><input type="checkbox" checked={followingOnly} onChange={e => setFollowingOnly(e.target.checked)}/>只看已关注</label><span>{filtered.length} 个信源</span></div>
-    <div className="feed-schedule-note"><Rss size={15}/><p>关注清单可供研究助手读取。卡片上的频率为巡检建议；保存关注不代表已启动独立轮询。入口核对时间与实际采集时间分别记录。</p></div>
+    <ResearchStatus/>
+    <div className="feed-schedule-note"><Rss size={15}/><p>核心信源的实际自动采集状态见上方运行面板。卡片频率仍为研究建议；拓展信源不会随本次核心采集一并启用。</p></div>
     {error && <div className="error-banner" role="alert">{error}<button onClick={load}>重试加载</button></div>}
     {notice && <p className="feed-saved" role="status"><Check size={13}/>{notice}</p>}
     {loading ? <div className="feed-empty"><Loader2 className="spin" size={24}/>正在读取信源库…</div> : filtered.length ? <div className="feed-grid">{filtered.map(feed => <article className="feed-card panel" key={feed.id} data-feed-id={feed.id}>

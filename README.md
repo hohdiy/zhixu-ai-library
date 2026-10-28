@@ -67,3 +67,9 @@ node scripts/test-collector-workerd.mjs
 网站“信源库”收录 38 个经检索精选的官方、项目、论文社区、作者通讯与中文资讯入口，覆盖六个研究主题。核心/拓展是编辑优先级，卡片频率是巡检建议。入口核对日期不代表实际采集时间；动态或访问受限入口单独标识。
 
 `data/feed-registry.json` 保存公开精选目录；D1 `feed_registry` 保存关注覆盖设置和用户自定义信源。支持搜索、主题/类型/语言筛选、关注暂停、自定义信源增删和 JSON 导出。`GET /api/feeds` 提供清单，`POST /api/feeds` 支持 follow/add/remove；完整研究接口和 list_library 同时返回 feedRegistry，供研究助手按关注清单选题。日任务的既定时刻保持不变，此变更不创建独立轮询器，也不将首页批量收录为文章。
+
+## 核心信源自动采集
+
+26 个核心关注信源由既有云端任务每天北京时间 08:30 检查，Worker 持久化每轮逐站记录、待精读队列与稳定简报 ID。云端研究助手核对原文并生成中文事实、洞察和站内简报，不需要额外模型 API 密钥。每站每轮最多新增一篇，已收录 URL 去重；读取失败保留原因及 partial 状态，下轮重试。任务调度在云端，不依赖网页打开，也不是 Worker 自带 Cron。
+
+操作约定见 [RESEARCH.md](RESEARCH.md)。`node scripts/test-research.mjs` 使用真实 SQLite 执行全部迁移并验证采集、精读、简报、幂等和失败路径；`node scripts/probe-discovery.mjs` 是可选的只读外网连通性预检。
